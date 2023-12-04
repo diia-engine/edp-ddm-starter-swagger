@@ -39,7 +39,7 @@ import java.util.Set;
 @ExtendWith(MockitoExtension.class)
 class GetSearchApiResponseHandlerTest {
 
-  private static final String OPERATION_CODE = "get-multiple";
+  private static final String OPERATION_CODE = "search";
   private static final Set<String> RESPONSE_CODES = Set.of("200", "400", "401", "500", "501");
 
   private ApiResponseHandler apiResponseHandler;
@@ -85,7 +85,7 @@ class GetSearchApiResponseHandlerTest {
 
   @Test
   void expectIsNotApplicableWhenNonGetRequest() throws NoSuchMethodException {
-    HandlerMethod handlerMethod = new HandlerMethod(mockDefaultController, "post");
+    HandlerMethod handlerMethod = new HandlerMethod(mockDefaultController, "createEntity");
 
     boolean actual = apiResponseHandler.isApplicable(handlerMethod);
 

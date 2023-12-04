@@ -24,27 +24,29 @@ import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.starter.swagger.apiresponse.ApiResponseHandler;
 import com.epam.digital.data.platform.starter.swagger.config.OpenApiResponseProperties;
+import com.epam.digital.data.platform.starter.swagger.utils.MockDefaultController;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.support.MessageSourceAccessor;
-
-import java.util.Map;
-import java.util.Set;
+import org.springframework.web.method.HandlerMethod;
 
 @ExtendWith(MockitoExtension.class)
-class PostApiResponseHandlerTest {
+class PostValidateApiResponseHandlerTest {
 
-  private static final String OPERATION_CODE = "post";
-  private static final Set<String> RESPONSE_CODES =
-      Set.of("201", "400", "401", "403", "409", "412", "422", "500", "501");
+  private static final String OPERATION_CODE = "post-validate";
+  private static final Set<String> RESPONSE_CODES = Set.of("200", "400", "401", "500", "501");
 
   private ApiResponseHandler apiResponseHandler;
+
+  private final MockDefaultController mockDefaultController = new MockDefaultController();
 
   @Mock
   private MessageSourceAccessor messageSourceAccessor;
@@ -54,46 +56,26 @@ class PostApiResponseHandlerTest {
   @BeforeEach
   void beforeEach() {
     apiResponseHandler =
-        new PostApiResponseHandler(messageSourceAccessor, openApiResponseProperties);
-
-    when(openApiResponseProperties.getCodes())
-            .thenReturn(Map.of(OPERATION_CODE, RESPONSE_CODES));
+        new PostValidationApiResponseHandler(messageSourceAccessor, openApiResponseProperties);
   }
 
   @Test
-  void expectNewResponsesAreAddedWhenNoExisting() {
-    Operation processedOperation = new Operation();
+  void expectIsApplicableWhenMethodNameStartsWithValidate() throws NoSuchMethodException {
+    HandlerMethod handlerMethod =
+        new HandlerMethod(mockDefaultController, "validateEntity");
 
-    apiResponseHandler.handle(processedOperation);
+    boolean actual = apiResponseHandler.isApplicable(handlerMethod);
 
-    assertThat(processedOperation.getResponses())
-        .containsOnlyKeys(RESPONSE_CODES);
-    verify(messageSourceAccessor, times(11)).getMessage(anyString());
+    assertThat(actual).isTrue();
   }
 
   @Test
-  void expectExistingResponseIsRemovedWhenNonMatchingCodes() {
-    Operation processedOperation = new Operation();
-    processedOperation.setResponses(new ApiResponses().addApiResponse("200", new ApiResponse()));
+  void expectIsNotApplicableWhenMethodNameNotStartsWithValidate() throws NoSuchMethodException {
+    HandlerMethod handlerMethod =
+        new HandlerMethod(mockDefaultController, "createEntity");
 
-    apiResponseHandler.handle(processedOperation);
+    boolean actual = apiResponseHandler.isApplicable(handlerMethod);
 
-    assertThat(processedOperation.getResponses())
-        .containsOnlyKeys(RESPONSE_CODES);
-    verify(messageSourceAccessor, times(11)).getMessage(anyString());
-  }
-
-  @Test
-  void expectExistingResponseIsUpdatedWhenMatchingCodes() {
-    Operation processedOperation = new Operation();
-    processedOperation.setResponses(
-        new ApiResponses().addApiResponse("201", new ApiResponse().$ref("ref")));
-
-    apiResponseHandler.handle(processedOperation);
-
-    assertThat(processedOperation.getResponses())
-        .containsOnlyKeys(RESPONSE_CODES);
-    assertThat(processedOperation.getResponses().get("201").get$ref()).isNotNull();
-    verify(messageSourceAccessor, times(11)).getMessage(anyString());
+    assertThat(actual).isFalse();
   }
 }

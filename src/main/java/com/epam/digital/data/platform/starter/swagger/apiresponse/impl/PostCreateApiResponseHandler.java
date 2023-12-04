@@ -16,16 +16,15 @@
 
 package com.epam.digital.data.platform.starter.swagger.apiresponse.impl;
 
-import com.epam.digital.data.platform.starter.swagger.apiresponse.AbstractApiResponseHandler;
 import com.epam.digital.data.platform.starter.swagger.config.OpenApiResponseProperties;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.method.HandlerMethod;
 
-public abstract class PostApiResponseHandler extends AbstractApiResponseHandler {
+@Component
+public class PostCreateApiResponseHandler extends PostApiResponseHandler {
 
-  public PostApiResponseHandler(
+  public PostCreateApiResponseHandler(
       MessageSourceAccessor messageSourceAccessor,
       OpenApiResponseProperties openapiResponseProperties) {
     super(messageSourceAccessor, openapiResponseProperties);
@@ -33,6 +32,12 @@ public abstract class PostApiResponseHandler extends AbstractApiResponseHandler 
 
   @Override
   public boolean isApplicable(HandlerMethod handlerMethod) {
-    return handlerMethod.hasMethodAnnotation(PostMapping.class);
+    return super.isApplicable(handlerMethod) &&
+        handlerMethod.getMethod().getName().startsWith("create");
+  }
+
+  @Override
+  protected String getDescriptionCode() {
+    return "post-create";
   }
 }

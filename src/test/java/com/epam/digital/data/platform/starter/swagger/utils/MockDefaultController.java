@@ -38,7 +38,17 @@ public class MockDefaultController {
   }
 
   @PostMapping
-  public ResponseEntity<Void> post() {
+  public ResponseEntity<Void> createEntity() {
+    return mock(ResponseEntity.class);
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> searchEntity() {
+    return mock(ResponseEntity.class);
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> validateEntity() {
     return mock(ResponseEntity.class);
   }
   

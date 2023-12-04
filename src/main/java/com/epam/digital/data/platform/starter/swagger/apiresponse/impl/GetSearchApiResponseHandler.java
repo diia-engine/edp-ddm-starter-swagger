@@ -42,6 +42,6 @@ public class GetSearchApiResponseHandler extends GetApiResponseHandler {
 
   @Override
   protected String getDescriptionCode() {
-    return "get-multiple";
+    return "search";
   }
 }
